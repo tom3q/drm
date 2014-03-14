@@ -37,6 +37,7 @@ static pthread_mutex_t table_lock = PTHREAD_MUTEX_INITIALIZER;
 
 struct fd_device * kgsl_device_new(int fd);
 struct fd_device * msm_device_new(int fd);
+struct fd_device * of_device_new(int fd);
 
 static void
 add_bucket(struct fd_device *dev, int size)
@@ -94,6 +95,9 @@ drm_public struct fd_device * fd_device_new(int fd)
 	} else if (!strcmp(version->name, "msm")) {
 		DEBUG_MSG("msm DRM device");
 		dev = msm_device_new(fd);
+	} else if (!strcmp(version->name, "exynos")) {
+		DEBUG_MSG("exynos DRM device");
+		dev = of_device_new(fd);
 	} else {
 		ERROR_MSG("unknown device: %s", version->name);
 		dev = NULL;
