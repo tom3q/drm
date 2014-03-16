@@ -34,7 +34,7 @@
 #  define __user
 #endif
 
-#include <drm/exynos_drm.h>
+#include "exynos_drm.h"
 
 struct of_device {
 	struct fd_device base;
