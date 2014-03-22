@@ -128,6 +128,7 @@ struct fd_ringbuffer_funcs {
 };
 
 struct fd_bo_funcs {
+	void *(*map)(struct fd_bo *bo);
 	int (*offset)(struct fd_bo *bo, uint64_t *offset);
 	int (*cpu_prep)(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op);
 	void (*cpu_fini)(struct fd_bo *bo);

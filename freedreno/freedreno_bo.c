@@ -342,6 +342,9 @@ drm_public uint32_t fd_bo_size(struct fd_bo *bo)
 
 drm_public void * fd_bo_map(struct fd_bo *bo)
 {
+	if (bo->funcs->map)
+		return bo->funcs->map(bo);
+
 	if (!bo->map) {
 		uint64_t offset;
 		int ret;
