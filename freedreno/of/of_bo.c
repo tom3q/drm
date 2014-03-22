@@ -27,41 +27,26 @@
 
 #include "of_priv.h"
 
-static int bo_allocate(struct of_bo *of_bo)
+static void *of_bo_map(struct fd_bo *bo)
 {
-	struct fd_bo *bo = &of_bo->base;
-	if (!of_bo->offset) {
-		struct drm_exynos_gem_map_off req = {
-				.handle = bo->handle,
+	if (!bo->map) {
+		struct drm_exynos_gem_mmap req = {
+			.handle = bo->handle,
+			.size = bo->size,
 		};
 		int ret;
 
-		/* if the buffer is already backed by pages then this
-		 * doesn't actually do anything (other than giving us
-		 * the offset)
-		 */
-		ret = drmCommandWriteRead(bo->dev->fd,
-					  DRM_EXYNOS_GEM_MAP_OFFSET,
-					  &req, sizeof(req));
+		ret = drmCommandWriteRead(bo->dev->fd, DRM_EXYNOS_GEM_MMAP,
+						&req, sizeof(req));
 		if (ret) {
-			ERROR_MSG("alloc failed: %s", strerror(errno));
-			return ret;
+			ERROR_MSG("DRM_EXYNOS_GEM_MMAP failed: %s",
+					strerror(errno));
+			bo->map = NULL;
 		}
 
-		of_bo->offset = req.offset;
+		bo->map = (void *)(unsigned long)req.mapped;
 	}
-
-	return 0;
-}
-
-static int of_bo_offset(struct fd_bo *bo, uint64_t *offset)
-{
-	struct of_bo *of_bo = to_of_bo(bo);
-	int ret = bo_allocate(of_bo);
-	if (ret)
-		return ret;
-	*offset = of_bo->offset;
-	return 0;
+	return bo->map;
 }
 
 static int of_bo_cpu_prep(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op)
@@ -95,7 +80,7 @@ static void of_bo_destroy(struct fd_bo *bo)
 }
 
 static struct fd_bo_funcs funcs = {
-		.offset = of_bo_offset,
+		.map = of_bo_map,
 		.cpu_prep = of_bo_cpu_prep,
 		.cpu_fini = of_bo_cpu_fini,
 		.destroy = of_bo_destroy,
