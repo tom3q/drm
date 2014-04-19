@@ -43,11 +43,17 @@ static int of_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp)
 			.pipe = of_pipe->pipe,
 			.fence = timestamp,
 	};
+	unsigned long cmd;
 	int ret;
 
 	get_abs_timeout(&req.timeout, 5000);
 
-	ret = drmCommandWrite(dev->fd, DRM_EXYNOS_G3D_WAIT, &req, sizeof(req));
+	if (pipe->id == FD_PIPE_3D)
+		cmd = DRM_EXYNOS_G3D_WAIT;
+	else
+		cmd = DRM_EXYNOS_G2D_WAIT;
+
+	ret = drmCommandWrite(dev->fd, cmd, &req, sizeof(req));
 	if (ret) {
 		ERROR_MSG("wait-fence failed! %d (%s)", ret, strerror(errno));
 		return ret;
@@ -65,9 +71,14 @@ static void of_pipe_destroy(struct fd_pipe *pipe)
 		struct drm_exynos_g3d_pipe req = {
 				.pipe = of_pipe->pipe,
 		};
+		unsigned long cmd;
 
-		ret = drmCommandWriteRead(pipe->dev->fd,
-						DRM_EXYNOS_G3D_DESTROY_PIPE,
+		if (pipe->id == FD_PIPE_3D)
+			cmd = DRM_EXYNOS_G3D_DESTROY_PIPE;
+		else
+			cmd = DRM_EXYNOS_G2D_DESTROY_PIPE;
+
+		ret = drmCommandWriteRead(pipe->dev->fd, cmd,
 						&req, sizeof(req));
 		if (ret)
 			ERROR_MSG("G3D_DESTROY_PIPE failed! %d (%s)",
@@ -89,6 +100,7 @@ struct fd_pipe * of_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
 	struct drm_exynos_g3d_pipe req;
 	struct of_pipe *of_pipe = NULL;
 	struct fd_pipe *pipe = NULL;
+	unsigned long cmd;
 	int ret;
 
 	of_pipe = calloc(1, sizeof(*of_pipe));
@@ -102,8 +114,12 @@ struct fd_pipe * of_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
 
 	memset(&req, 0, sizeof(req));
 
-	ret = drmCommandWriteRead(dev->fd, DRM_EXYNOS_G3D_CREATE_PIPE,
-					&req, sizeof(req));
+	if (id == FD_PIPE_3D)
+		cmd = DRM_EXYNOS_G3D_CREATE_PIPE;
+	else
+		cmd = DRM_EXYNOS_G2D_CREATE_PIPE;
+
+	ret = drmCommandWriteRead(dev->fd, cmd, &req, sizeof(req));
 	if (ret) {
 		ERROR_MSG("G3D_CREATE_PIPE failed! %d (%s)",
 				ret, strerror(errno));
