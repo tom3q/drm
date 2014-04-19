@@ -191,7 +191,7 @@ struct fd_bo * fd_bo_new(struct fd_device *dev,
 
 	pthread_mutex_lock(&table_lock);
 	bo = bo_from_handle(dev, size, handle);
-	bo->bo_reuse = 1;
+	bo->bo_reuse = 0;
 	pthread_mutex_unlock(&table_lock);
 
 	return bo;
