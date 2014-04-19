@@ -51,6 +51,7 @@ static void *of_bo_map(struct fd_bo *bo)
 
 static int of_bo_cpu_prep(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op)
 {
+#if 0
 	struct drm_exynos_gem_cpu_prep req = {
 			.handle = bo->handle,
 			.op = op,
@@ -60,16 +61,21 @@ static int of_bo_cpu_prep(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op)
 
 	return drmCommandWrite(bo->dev->fd, DRM_EXYNOS_GEM_CPU_PREP,
 			       &req, sizeof(req));
+#else
+	return 0;
+#endif
 }
 
 static void of_bo_cpu_fini(struct fd_bo *bo)
 {
+#if 0
 	struct drm_exynos_gem_cpu_fini req = {
 			.handle = bo->handle,
 	};
 
 	drmCommandWrite(bo->dev->fd, DRM_EXYNOS_GEM_CPU_FINI,
 			&req, sizeof(req));
+#endif
 }
 
 static void of_bo_destroy(struct fd_bo *bo)
