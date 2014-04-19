@@ -357,28 +357,6 @@ struct drm_exynos_g3d_wait {
 	__u32 reserved[2];
 };
 
-/**
- * A structure for requesting buffer CPU access.
- *
- * @handle: a handle to GEM buffer.
- * @op: requested access type.
- * @timeout: maximum waiting time if buffer busy.
- */
-struct drm_exynos_gem_cpu_prep {
-	uint32_t handle;
-	uint32_t op;
-	struct drm_exynos_timespec timeout;
-};
-
-/**
- * A structure for finishing buffer CPU access.
- *
- * @handle: a handle to GEM buffer.
- */
-struct drm_exynos_gem_cpu_fini {
-	uint32_t handle;
-};
-
 enum drm_exynos_ops_id {
 	EXYNOS_DRM_OPS_SRC,
 	EXYNOS_DRM_OPS_DST,
@@ -568,8 +546,6 @@ struct drm_exynos_ipp_cmd_ctrl {
 #define DRM_EXYNOS_G3D_SUBMIT		0x52
 #define DRM_EXYNOS_G3D_WAIT		0x53
 
-#define DRM_EXYNOS_GEM_CPU_PREP		0x60
-#define DRM_EXYNOS_GEM_CPU_FINI		0x61
 
 #define DRM_IOCTL_EXYNOS_GEM_CREATE		DRM_IOWR(DRM_COMMAND_BASE + \
 		DRM_EXYNOS_GEM_CREATE, struct drm_exynos_gem_create)
