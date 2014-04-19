@@ -92,7 +92,7 @@ int of_bo_new_handle(struct fd_device *dev,
 {
 	struct drm_exynos_gem_create req = {
 			.size = size,
-			.flags = EXYNOS_BO_CACHABLE,
+			.flags = EXYNOS_BO_WC,
 	};
 	int ret;
 
