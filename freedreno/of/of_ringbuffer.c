@@ -63,12 +63,17 @@ static int of_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start)
 	};
 	struct of_bo *of_bo = NULL, *tmp;
 	int ret, id = ring->pipe->id;
+	unsigned long cmd;
 
 	req.offset = offset_bytes(last_start, ring->start);
 	req.length = offset_bytes(ring->cur, last_start);
 
-	ret = drmCommandWriteRead(ring->pipe->dev->fd, DRM_EXYNOS_G3D_SUBMIT,
-				  &req, sizeof(req));
+	if (id == FD_PIPE_3D)
+		cmd = DRM_EXYNOS_G3D_SUBMIT;
+	else
+		cmd = DRM_EXYNOS_G2D_SUBMIT;
+
+	ret = drmCommandWriteRead(ring->pipe->dev->fd, cmd, &req, sizeof(req));
 	if (ret) {
 		ERROR_MSG("submit failed: %d (%s)", ret, strerror(errno));
 	} else {
