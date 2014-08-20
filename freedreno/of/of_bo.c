@@ -65,14 +65,18 @@ static int of_bo_cpu_prep(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op)
 
 static void of_bo_cpu_fini(struct fd_bo *bo)
 {
-	/* TODO */
+	struct fd_device *dev = bo->dev;
+	struct drm_exynos_g3d_cpu_prep req = {
+			.handle = bo->handle,
+	};
+
+	drmCommandWrite(dev->fd, DRM_EXYNOS_G3D_CPU_FINI, &req, sizeof(req));
 }
 
 static void of_bo_destroy(struct fd_bo *bo)
 {
 	struct of_bo *of_bo = to_of_bo(bo);
 	free(of_bo);
-
 }
 
 static struct fd_bo_funcs funcs = {
