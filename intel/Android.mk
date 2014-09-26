@@ -21,6 +21,8 @@
 # IN THE SOFTWARE.
 #
 
+ifneq ($(filter $(BOARD_GPU_DRIVERS), i915 i965 i915g ilo),)
+
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -53,3 +55,5 @@ LOCAL_SHARED_LIBRARIES := \
 	libpciaccess
 
 include $(BUILD_SHARED_LIBRARY)
+
+endif

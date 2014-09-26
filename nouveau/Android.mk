@@ -1,3 +1,5 @@
+ifneq ($(filter $(BOARD_GPU_DRIVERS), nouveau),)
+
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -28,3 +30,5 @@ LOCAL_SHARED_LIBRARIES := \
 	libdrm
 
 include $(BUILD_SHARED_LIBRARY)
+
+endif
