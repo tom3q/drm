@@ -57,7 +57,32 @@ static void of_bo_destroy(struct fd_bo *bo)
 	free(of_bo);
 }
 
+static int of_bo_offset(struct fd_bo *bo, uint64_t *offset)
+{
+	struct of_bo *of_bo = to_of_bo(bo);
+
+	if (!of_bo->offset) {
+		struct fd_device *dev = bo->dev;
+		struct drm_exynos_gem_map_off req = {
+			.handle = bo->handle,
+		};
+		int ret;
+
+		ret = drmCommandWriteRead(dev->fd, DRM_EXYNOS_GEM_MAP_OFFSET,
+						&req, sizeof(req));
+		if (ret)
+			return ret;
+
+		of_bo->offset = req.offset;
+	}
+
+	*offset = of_bo->offset;
+
+	return 0;
+}
+
 static struct fd_bo_funcs funcs = {
+		.offset = of_bo_offset,
 		.cpu_prep = of_bo_cpu_prep,
 		.cpu_fini = of_bo_cpu_fini,
 		.destroy = of_bo_destroy,
