@@ -63,13 +63,12 @@ static int of_bo_offset(struct fd_bo *bo, uint64_t *offset)
 
 	if (!of_bo->offset) {
 		struct fd_device *dev = bo->dev;
-		struct drm_exynos_gem_map_off req = {
+		struct drm_mode_map_dumb req = {
 			.handle = bo->handle,
 		};
 		int ret;
 
-		ret = drmCommandWriteRead(dev->fd, DRM_EXYNOS_GEM_MAP_OFFSET,
-						&req, sizeof(req));
+		ret = drmIoctl(dev->fd, DRM_IOCTL_MODE_MAP_DUMB, &req);
 		if (ret)
 			return ret;
 
