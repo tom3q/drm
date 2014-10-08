@@ -216,27 +216,25 @@ fd_bo_from_handle(struct fd_device *dev, uint32_t handle, uint32_t size)
 drm_public struct fd_bo *
 fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 {
-	struct drm_prime_handle req = {
-			.fd = fd,
-	};
 	struct fd_bo *bo;
+	uint32_t handle;
 	int ret, size;
 
-	ret = drmIoctl(dev->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &req);
+	ret = drmPrimeFDToHandle(dev->fd, fd, &handle);
 	if (ret) {
 		return NULL;
 	}
 
 	pthread_mutex_lock(&table_lock);
 
-	bo = lookup_bo(dev->handle_table, req.handle);
+	bo = lookup_bo(dev->handle_table, handle);
 	if (bo)
 		goto out_unlock;
 
 	/* hmm, would be nice if we had a way to figure out the size.. */
 	size = 0;
 
-	bo = bo_from_handle(dev, size, req.handle);
+	bo = bo_from_handle(dev, size, handle);
 
 out_unlock:
 	pthread_mutex_unlock(&table_lock);
@@ -378,18 +376,13 @@ drm_public uint32_t fd_bo_handle(struct fd_bo *bo)
 drm_public int fd_bo_dmabuf(struct fd_bo *bo)
 {
 	if (!bo->fd) {
-		struct drm_prime_handle req = {
-				.handle = bo->handle,
-				.flags = DRM_CLOEXEC,
-		};
 		int ret;
 
-		ret = drmIoctl(bo->dev->fd, DRM_IOCTL_PRIME_HANDLE_TO_FD, &req);
+		ret = drmPrimeHandleToFD(bo->dev->fd, bo->handle,
+						DRM_CLOEXEC, &bo->fd);
 		if (ret) {
 			return ret;
 		}
-
-		bo->fd = req.fd;
 	}
 	return dup(bo->fd);
 }
