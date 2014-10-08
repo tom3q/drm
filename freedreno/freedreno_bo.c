@@ -219,6 +219,7 @@ fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 	struct drm_prime_handle req = {
 			.fd = fd,
 	};
+	struct fd_bo *bo;
 	int ret, size;
 
 	ret = drmIoctl(dev->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &req);
@@ -226,10 +227,21 @@ fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 		return NULL;
 	}
 
+	pthread_mutex_lock(&table_lock);
+
+	bo = lookup_bo(dev->handle_table, req.handle);
+	if (bo)
+		goto out_unlock;
+
 	/* hmm, would be nice if we had a way to figure out the size.. */
 	size = 0;
 
-	return fd_bo_from_handle(dev, req.handle, size);
+	bo = bo_from_handle(dev, size, req.handle);
+
+out_unlock:
+	pthread_mutex_unlock(&table_lock);
+
+	return bo;
 }
 
 drm_public struct fd_bo * fd_bo_from_name(struct fd_device *dev, uint32_t name)
