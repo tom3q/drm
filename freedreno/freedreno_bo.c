@@ -71,7 +71,8 @@ static struct fd_bo * bo_from_handle(struct fd_device *dev,
 		return NULL;
 	}
 	bo->dev = fd_device_ref(dev);
-	bo->size = size;
+	if (size)
+		bo->size = size;
 	bo->handle = handle;
 	atomic_set(&bo->refcnt, 1);
 	list_inithead(&bo->list);
@@ -397,6 +398,11 @@ drm_public void * fd_bo_map(struct fd_bo *bo)
 	if (!bo->map) {
 		uint64_t offset;
 		int ret;
+
+		if (!bo->size) {
+			ERROR_MSG("unknown BO size, cannot map");
+			return NULL;
+		}
 
 		ret = bo->funcs->offset(bo, &offset);
 		if (ret) {

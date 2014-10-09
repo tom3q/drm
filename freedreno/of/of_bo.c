@@ -129,5 +129,19 @@ struct fd_bo * of_bo_from_handle(struct fd_device *dev,
 	for (i = 0; i < ARRAY_SIZE(of_bo->list); i++)
 		list_inithead(&of_bo->list[i]);
 
+	if (!size) {
+		struct drm_exynos_gem_info req = {
+			.handle = handle,
+		};
+		int ret;
+
+		ret = drmCommandWriteRead(dev->fd, DRM_EXYNOS_GEM_GET,
+				  &req, sizeof(req));
+		if (ret)
+			ERROR_MSG("failed to get BO size");
+		else
+			bo->size = req.size;
+	}
+
 	return bo;
 }
